@@ -4,7 +4,7 @@
 
 `ets` is a command output timestamper — it prefixes each line of a command's output with a timestamp.
 
-The purpose of `ets` is similar to that of moreutils [`ts(1)`](https://manpages.ubuntu.com/manpages/focal/en/man1/ts.1.html), but `ets` differentiates itself from similar offerings by running commands directly within ptys, hence solving thorny issues like pipe buffering and commands disabling color and interactive features when detecting a pipe as output. (`ets` also provides a reading-from-stdin mode if you insist.)
+The purpose of `ets` is similar to that of moreutils [`ts(1)`](https://manpages.ubuntu.com/manpages/focal/en/man1/ts.1.html), but `ets` differentiates itself from similar offerings by running commands directly within ptys, hence solving thorny issues like pipe buffering and commands disabling color and interactive features when detecting a pipe as output. (`ets` also provides a reading-from-stdin mode if you insist.) A more detailed comparison of `ets` and `ts` can be found [below](#comparison-to-moreutils-ts).
 
 `ets` currently supports macOS, Linux, and various other *ix variants.
 
