@@ -125,7 +125,20 @@ $ ets -z America/Los_Angeles -f '[%F %T%z]' ping localhost
 
 ## Installation
 
-TBD.
+- On macOS you can install ets with Homebrew:
+
+  ```
+  brew tap zmwangx/ets https://github.com/zmwangx/ets
+  brew install zmwangx/ets/ets
+  ```
+
+- On macOS and Linux you get download a prebuilt tarball/package from the [release page](https://github.com/zmwangx/ets/releases).
+
+- On a supported platform, if you have the Go toolchain installed, you may install with
+
+  ```
+  go get github.com/zmwangx/ets
+  ```
 
 ## Usage
 
