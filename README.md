@@ -1,5 +1,10 @@
 <h1 align="center"><img src="assets/logo.svg" height="50" alt="ets" /></h1>
 
+<p align="center">
+  <a href="https://github.com/zmwangx/ets/releases"><img src="https://img.shields.io/github/v/release/zmwangx/ets" alt="GitHub release" /></a>
+  <a href="https://github.com/zmwangx/ets/actions"><img src="https://github.com/zmwangx/ets/workflows/test/badge.svg?branch=master" alt="Build status" /></a>
+</p>
+
 <p align="center"><img src="assets/animation.svg" alt="ets" /></p>
 
 `ets` is a command output timestamper — it prefixes each line of a command's output with a timestamp.
