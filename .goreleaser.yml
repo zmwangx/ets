@@ -1,0 +1,38 @@
+project_name: ets
+before:
+  hooks:
+    - go mod download
+builds:
+  - env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - 386
+      - amd64
+    ignore:
+      - goos: darwin
+        goarch: 386
+archives:
+  - replacements:
+      386: i386
+nfpms:
+  - formats:
+      - deb
+      - rpm
+    replacements:
+      386: i386
+    files:
+      "ets.1": "/usr/share/man/man1/ets.1"
+release:
+  draft: true
+  prerelease: auto
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"

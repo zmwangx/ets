@@ -1,0 +1,263 @@
+.Dd June 16, 2020
+.Dt ETS 1
+.Sh NAME
+.Nm ets
+.Nd command output timestamper
+.Sh SYNOPSIS
+.Nm
+.Op Fl s | i
+.Op Fl f Ar format
+.Op Fl u | z Ar timezone
+.Ar command
+.Op Ar arg ...
+.Nm
+.Op options
+.Ar shell_command
+.Nm
+.Op options
+.Sh DESCRIPTION
+.Nm
+prefixes each line of a command's output with a timestamp.
+.Pp
+The three forms in
+.Sx SYNOPSIS
+correspond to three command execution modes:
+.Bl -bullet -width ""
+.It
+If given a single command without whitespace(s), or a command and its arguments,
+execute the command with exec in a pty;
+.It
+If given a single command with whitespace(s), the command is treated as a shell
+command and executed as
+.Sq SHELL -c Ar shell_command Ns ,
+where SHELL is the current user's login shell, or sh if login shell cannot be
+determined;
+.It
+If given no command, output is read from stdin, and the user is responsible for
+piping in a command's output.
+.El
+.Pp
+There are three mutually exclusive timestamp modes:
+.Bl -bullet -width ""
+.It
+The default is absolute time mode, where timestamps from the wall clock are
+shown;
+.It
+.Fl s, -elapsed
+turns on elapsed time mode, where every timestamp is the time elapsed from the
+start of the command (using a monotonic clock);
+.It
+.Fl i, -incremental
+turns on incremental time mode, where every timestamp is the time elapsed since
+the last timestamp (using a monotonic clock).
+.El
+.Pp
+The default format of the prefixed timestamps depends on the timestamp mode
+active. Users may supply a custom format string with the
+.Fl f, -format
+option.
+.Pp
+The timezone for absolute timestamps can be controlled via the
+.Fl u, -utc
+and
+.Fl z, -timezone
+options. Local time is used by default.
+.Pp
+The full list of options:
+.Bl -tag -width -indent
+.It Fl s, -elapsed
+Run in elapsed time mode.
+.It Fl i, -incremental
+Run in incremental time mode.
+.It Fl f, -format Ar format
+Use custom
+.Xr strftime 3 Ns -style
+format string
+.Ar format
+for prefixed timestamps.
+.Pp
+The default is
+.Dq [%Y-%m-%d %H:%M:%S]
+for absolute time mode and
+.Dq [%H:%M:%S]
+for elapsed and incremental time modes.
+.Pp
+See
+.Sx FORMATTING DIRECTIVES
+for details.
+.It Fl u, -utc
+Use UTC for absolute timestamps instead of local time.
+.Pp
+This option is mutually exclusive with
+.Fl -z, -timezone Ns .
+.It Fl z, -timezone Ar timezone
+Use
+.Ar timezone
+for absolute timestamps instead of local time.
+.Ar timezone
+is an IANA time zone name, e.g.
+.Dq America/Los_Angeles Ns .
+.Pp
+This option is mutually exclusive with
+.Fl u, -utc Ns .
+.El
+.Sh FORMATTING DIRECTIVES
+Formatting directives largely match
+.Xr strftime 3 Ns 's directives
+on FreeBSD and macOS, with the following differences:
+.Bl -bullet -width ""
+.It
+Additional directives
+.Sy %f
+for microsecond and
+.Sy %L
+for millisecond are supported.
+.It
+POSIX locale extensions
+.Sy %E*
+and
+.Sy %O*
+are not supported;
+.It
+glibc extensions
+.Sy %-*,
+.Sy %_*,
+and
+.Sy %0*
+are not supported;
+.It
+Directives
+.Sy %G,
+.Sy %g,
+and
+.Sy %+
+are not supported.
+.El
+.Pp
+Below is the full list of supported directives:
+.Bl -tag -width "xxxx"
+.It Cm \&%A
+is replaced by national representation of the full weekday name.
+.It Cm %a
+is replaced by national representation of
+the abbreviated weekday name.
+.It Cm \&%B
+is replaced by national representation of the full month name.
+.It Cm %b
+is replaced by national representation of
+the abbreviated month name.
+.It Cm \&%C
+is replaced by (year / 100) as decimal number; single
+digits are preceded by a zero.
+.It Cm %c
+is replaced by national representation of time and date.
+.It Cm \&%D
+is equivalent to
+.Dq Li %m/%d/%y .
+.It Cm %d
+is replaced by the day of the month as a decimal number (01-31).
+.It Cm %e
+is replaced by the day of the month as a decimal number (1-31); single
+digits are preceded by a blank.
+.It Cm \&%F
+is equivalent to
+.Dq Li %Y-%m-%d .
+.It Cm \&%f
+is replaced by the microsecond as a decimal number (000000-999999).
+.It Cm \&%H
+is replaced by the hour (24-hour clock) as a decimal number (00-23).
+.It Cm %h
+the same as
+.Cm %b .
+.It Cm \&%I
+is replaced by the hour (12-hour clock) as a decimal number (01-12).
+.It Cm %j
+is replaced by the day of the year as a decimal number (001-366).
+.It Cm %k
+is replaced by the hour (24-hour clock) as a decimal number (0-23);
+single digits are preceded by a blank.
+.It Cm \&%L
+is replaced by the millisecond as a decimal number (000-999).
+.It Cm %l
+is replaced by the hour (12-hour clock) as a decimal number (1-12);
+single digits are preceded by a blank.
+.It Cm \&%M
+is replaced by the minute as a decimal number (00-59).
+.It Cm %m
+is replaced by the month as a decimal number (01-12).
+.It Cm %n
+is replaced by a newline.
+.It Cm %p
+is replaced by national representation of either
+"ante meridiem" (a.m.)
+or
+"post meridiem" (p.m.)
+as appropriate.
+.It Cm \&%R
+is equivalent to
+.Dq Li %H:%M .
+.It Cm %r
+is equivalent to
+.Dq Li %I:%M:%S %p .
+.It Cm \&%S
+is replaced by the second as a decimal number (00-60).
+.It Cm %s
+is replaced by the number of seconds since the Epoch, UTC (see
+.Xr mktime 3 ) .
+.It Cm \&%T
+is equivalent to
+.Dq Li %H:%M:%S .
+.It Cm %t
+is replaced by a tab.
+.It Cm \&%U
+is replaced by the week number of the year (Sunday as the first day of
+the week) as a decimal number (00-53).
+.It Cm %u
+is replaced by the weekday (Monday as the first day of the week)
+as a decimal number (1-7).
+.It Cm \&%V
+is replaced by the week number of the year (Monday as the first day of
+the week) as a decimal number (01-53).
+If the week containing January
+1 has four or more days in the new year, then it is week 1; otherwise
+it is the last week of the previous year, and the next week is week 1.
+.It Cm %v
+is equivalent to
+.Dq Li %e-%b-%Y .
+.It Cm \&%W
+is replaced by the week number of the year (Monday as the first day of
+the week) as a decimal number (00-53).
+.It Cm %w
+is replaced by the weekday (Sunday as the first day of the week)
+as a decimal number (0-6).
+.It Cm \&%X
+is replaced by national representation of the time.
+.It Cm %x
+is replaced by national representation of the date.
+.It Cm \&%Y
+is replaced by the year with century as a decimal number.
+.It Cm %y
+is replaced by the year without century as a decimal number (00-99).
+.It Cm \&%Z
+is replaced by the time zone name.
+.It Cm %z
+is replaced by the time zone offset from UTC; a leading plus sign stands for
+east of UTC, a minus sign for west of UTC, hours and minutes follow
+with two digits each and no delimiter between them (common form for
+RFC 822 date headers).
+.It Cm %%
+is replaced by
+.Ql % .
+.El
+.Sh SEE ALSO
+.Xr ts 1 ,
+.Xr strftime 3
+.Sh HISTORY
+The name
+.Nm
+comes from
+.Dq enhanced ts Ns ,
+referring to moreutils
+.Xr ts 1 Ns .
+.Sh AUTHORS
+.An Zhiming Wang Aq Mt i@zhimingwang.org
