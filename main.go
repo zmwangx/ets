@@ -127,6 +127,7 @@ func main() {
 	var format = flag.StringP("format", "f", "", "show timestamps in this format")
 	var utc = flag.BoolP("utc", "u", false, "show absolute timestamps in UTC")
 	var timezoneName = flag.StringP("timezone", "z", "", "show absolute timestamps in this timezone, e.g. America/New_York")
+	var color = flag.BoolP("color", "c", false, "show timestamps in color")
 	var printHelp = flag.BoolP("help", "h", false, "print help and exit")
 	var printVersion = flag.BoolP("version", "v", false, "print version and exit")
 	flag.CommandLine.SortFlags = false
@@ -222,6 +223,9 @@ Options:
 			log.Fatal(err)
 		}
 		timezone = location
+	}
+	if *color {
+		*format = "\x1b[32m" + *format + "\x1b[0m"
 	}
 	args := flag.Args()
 

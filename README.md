@@ -123,6 +123,13 @@ $ ets -z America/Los_Angeles -f '[%F %T%z]' ping localhost
 [2020-06-16 02:13:05-0700] 64 bytes from 127.0.0.1: icmp_seq=2 ttl=64 time=0.037 ms
 ```
 
+Color the timestamps:
+
+```console
+$ ets -c ping localhost
+...
+```
+
 ## Installation
 
 - On macOS you can install ets with Homebrew:
@@ -219,6 +226,9 @@ DESCRIPTION
               ``America/Los_Angeles''.
 
               This option is mutually exclusive with -u, --utc.
+
+     -c, --color
+              Print timestamps in color.
 
 FORMATTING DIRECTIVES
      Formatting directives largely match strftime(3)'s directives on FreeBSD
