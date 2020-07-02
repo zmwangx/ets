@@ -14,11 +14,17 @@ import (
 	"time"
 
 	"github.com/creack/pty"
+	"github.com/mattn/go-runewidth"
 	"github.com/riywo/loginshell"
 	flag "github.com/spf13/pflag"
 )
 
 var version = "unknown"
+
+// Regexp to strip ANSI escape sequences from string. Credit:
+// https://github.com/chalk/ansi-regex/blob/2b56fb0c7a07108e5b54241e8faec160d393aedb/index.js#L4-L7
+// https://github.com/acarl005/stripansi/blob/5a71ef0e047df0427e87a79f27009029921f1f9b/stripansi.go#L7
+var ansiEscapes = regexp.MustCompile("[\u001B\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~]))")
 
 func printStreamWithTimestamper(r io.Reader, timestamper *Timestamper) {
 	scanner := bufio.NewScanner(r)
@@ -71,8 +77,27 @@ func runCommandWithTimestamper(args []string, timestamper *Timestamper) error {
 		for sig := range sigs {
 			switch sig {
 			case syscall.SIGWINCH:
-				if err := pty.InheritSize(os.Stdin, ptmx); err != nil {
-					log.Printf("error resizing pty: %s", err)
+				// Resize pty, taking into account horizontal space taken up by timestamps.
+				winsize, err := pty.GetsizeFull(os.Stdin)
+				if err != nil {
+					// Most likely stdin isn't a tty, in which case we don't care.
+					break
+				}
+				totalCols := winsize.Cols
+				plainTimestampString := ansiEscapes.ReplaceAllString(timestamper.CurrentTimestampString(), "")
+				// Timestamp width along with one space character.
+				occupiedWidth := uint16(runewidth.StringWidth(plainTimestampString)) + 1
+				var effectiveCols uint16 = 0
+				if occupiedWidth < totalCols {
+					effectiveCols = totalCols - occupiedWidth
+				}
+				winsize.Cols = effectiveCols
+				// Best effort estimate of the effective width in pixels.
+				if totalCols > 0 {
+					winsize.X = winsize.X * effectiveCols / totalCols
+				}
+				if err := pty.Setsize(ptmx, winsize); err != nil {
+					log.Println("error resizing pty:", err)
 				}
 
 			case syscall.SIGINT:

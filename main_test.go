@@ -14,6 +14,8 @@ import (
 	"syscall"
 	"testing"
 	"time"
+
+	"github.com/creack/pty"
 )
 
 var rootdir string
@@ -84,6 +86,10 @@ func parseOutput(output []byte, prefixPattern string) []*parsedLine {
 	}
 	parsed := make([]*parsedLine, 0)
 	for _, line := range lines {
+		// Drop final CR if there is one.
+		if line != "" && line[len(line)-1] == '\r' {
+			line = line[:len(line)-1]
+		}
 		m := linePattern.FindStringSubmatch(line)
 		if m == nil {
 			parsed = append(parsed, &parsedLine{
@@ -317,5 +323,75 @@ func TestSignals(t *testing.T) {
 		if !found {
 			t.Errorf("expected output %#v not found in outputs %#v", expectedOutput, outputs)
 		}
+	}
+}
+
+func TestWindowSize(t *testing.T) {
+	tests := []struct {
+		name           string
+		args           []string
+		prefixPattern  string
+		rows           uint16
+		cols           uint16
+		expectedOutput string
+	}{
+		{
+			"default",
+			[]string{"./winsize"},
+			`\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]`,
+			24,
+			80,
+			"58x24",
+		},
+		{
+			"wide-chars",
+			[]string{"-f", "\x1b[32m[%Y-%m-%d %H:%M:%S]\x1b[0m", "./winsize"},
+			`\x1b\[32m\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\x1b\[0m`,
+			24,
+			80,
+			"58x24",
+		},
+		{
+			"wide-chars",
+			[]string{"-f", "[时间 %Y-%m-%d %H:%M:%S]", "./winsize"},
+			`\[时间 \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]`,
+			24,
+			80,
+			"53x24",
+		},
+		{
+			"narrow-terminal",
+			[]string{"./winsize"},
+			`\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]`,
+			24,
+			10,
+			"0x24",
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			expectedOutputs := []string{test.expectedOutput}
+			cmd := exec.Command("./ets", test.args...)
+			ptmx, err := pty.StartWithSize(cmd, &pty.Winsize{Rows: test.rows, Cols: test.cols, X: 0, Y: 0})
+			if err != nil {
+				t.Fatalf("failed to start command in pty: %s", err)
+			}
+			defer func() { _ = ptmx.Close() }()
+			output, err := ioutil.ReadAll(ptmx)
+			if err != nil {
+				t.Fatalf("failed to read pty output: %s", err)
+			}
+			parsed := parseOutput(output, test.prefixPattern)
+			outputs := make([]string, 0)
+			for _, pl := range parsed {
+				if pl.prefix == "" {
+					t.Errorf("unexpected line: %s", pl.raw)
+				}
+				outputs = append(outputs, pl.output)
+			}
+			if !reflect.DeepEqual(outputs, expectedOutputs) {
+				t.Fatalf("wrong outputs: expected %#v, got %#v", expectedOutputs, outputs)
+			}
+		})
 	}
 }
