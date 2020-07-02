@@ -64,8 +64,31 @@ func printStreamWithTimestamper(r io.Reader, timestamper *Timestamper) {
 }
 
 func runCommandWithTimestamper(args []string, timestamper *Timestamper) error {
+	// Calculate optimal pty size, taking into account horizontal space taken up by timestamps.
+	getPtyWinsize := func() *pty.Winsize {
+		winsize, err := pty.GetsizeFull(os.Stdin)
+		if err != nil {
+			// Most likely stdin isn't a tty, in which case we don't care.
+			return winsize
+		}
+		totalCols := winsize.Cols
+		plainTimestampString := ansiEscapes.ReplaceAllString(timestamper.CurrentTimestampString(), "")
+		// Timestamp width along with one space character.
+		occupiedWidth := uint16(runewidth.StringWidth(plainTimestampString)) + 1
+		var effectiveCols uint16 = 0
+		if occupiedWidth < totalCols {
+			effectiveCols = totalCols - occupiedWidth
+		}
+		winsize.Cols = effectiveCols
+		// Best effort estimate of the effective width in pixels.
+		if totalCols > 0 {
+			winsize.X = winsize.X * effectiveCols / totalCols
+		}
+		return winsize
+	}
+
 	command := exec.Command(args[0], args[1:]...)
-	ptmx, err := pty.Start(command)
+	ptmx, err := pty.StartWithSize(command, getPtyWinsize())
 	if err != nil {
 		return err
 	}
@@ -77,26 +100,7 @@ func runCommandWithTimestamper(args []string, timestamper *Timestamper) error {
 		for sig := range sigs {
 			switch sig {
 			case syscall.SIGWINCH:
-				// Resize pty, taking into account horizontal space taken up by timestamps.
-				winsize, err := pty.GetsizeFull(os.Stdin)
-				if err != nil {
-					// Most likely stdin isn't a tty, in which case we don't care.
-					break
-				}
-				totalCols := winsize.Cols
-				plainTimestampString := ansiEscapes.ReplaceAllString(timestamper.CurrentTimestampString(), "")
-				// Timestamp width along with one space character.
-				occupiedWidth := uint16(runewidth.StringWidth(plainTimestampString)) + 1
-				var effectiveCols uint16 = 0
-				if occupiedWidth < totalCols {
-					effectiveCols = totalCols - occupiedWidth
-				}
-				winsize.Cols = effectiveCols
-				// Best effort estimate of the effective width in pixels.
-				if totalCols > 0 {
-					winsize.X = winsize.X * effectiveCols / totalCols
-				}
-				if err := pty.Setsize(ptmx, winsize); err != nil {
+				if err := pty.Setsize(ptmx, getPtyWinsize()); err != nil {
 					log.Println("error resizing pty:", err)
 				}
 
