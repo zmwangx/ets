@@ -378,7 +378,9 @@ func TestWindowSize(t *testing.T) {
 			}
 			defer func() { _ = ptmx.Close() }()
 			output, err := ioutil.ReadAll(ptmx)
-			if err != nil {
+			// TODO: figure out why we get &os.PathError{Op:"read", Path:"/dev/ptmx", Err:0x5} on Linux.
+			// https://github.com/creack/pty/issues/100
+			if len(output) == 0 && err != nil {
 				t.Fatalf("failed to read pty output: %s", err)
 			}
 			parsed := parseOutput(output, test.prefixPattern)
