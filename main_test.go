@@ -344,7 +344,7 @@ func TestWindowSize(t *testing.T) {
 			"58x24",
 		},
 		{
-			"wide-chars",
+			"color",
 			[]string{"-f", "\x1b[32m[%Y-%m-%d %H:%M:%S]\x1b[0m", "./winsize"},
 			`\x1b\[32m\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\]\x1b\[0m`,
 			24,
