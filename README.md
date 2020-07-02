@@ -6,6 +6,7 @@
 </p>
 
 <p align="center"><img src="assets/animation.svg" alt="ets" /></p>
+<p align="center"><img src="assets/animation-progressbar.svg" alt="ets" /></p>
 
 `ets` is a command output timestamper — it prefixes each line of a command's output with a timestamp.
 
