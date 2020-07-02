@@ -9,7 +9,7 @@
 
 `ets` is a command output timestamper — it prefixes each line of a command's output with a timestamp.
 
-The purpose of `ets` is similar to that of moreutils [`ts(1)`](https://manpages.ubuntu.com/manpages/focal/en/man1/ts.1.html), but `ets` differentiates itself from similar offerings by running commands directly within ptys, hence solving thorny issues like pipe buffering and commands disabling color and interactive features when detecting a pipe as output. (`ets` also provides a reading-from-stdin mode if you insist.) A more detailed comparison of `ets` and `ts` can be found [below](#comparison-to-moreutils-ts).
+The purpose of `ets` is similar to that of moreutils [`ts(1)`](https://manpages.ubuntu.com/manpages/focal/en/man1/ts.1.html), but `ets` differentiates itself from similar offerings by running commands directly within ptys, hence solving thorny issues like pipe buffering and commands disabling color and interactive features when detecting a pipe as output. (`ets` does provide a reading-from-stdin mode if you insist.) `ets` also recognizes carriage return as a line seperator, so it doesn't choke if your command prints a progress bar. A more detailed comparison of `ets` and `ts` can be found [below](#comparison-to-moreutils-ts).
 
 `ets` currently supports macOS, Linux, and various other *ix variants.
 
@@ -157,7 +157,8 @@ SYNOPSIS
      ets [options]
 
 DESCRIPTION
-     ets prefixes each line of a command's output with a timestamp.
+     ets prefixes each line of a command's output with a timestamp. Lines are
+     delimited by CR, LF, or CRLF.
 
      The three forms in SYNOPSIS correspond to three command execution modes:
 
@@ -357,6 +358,7 @@ AUTHORS
 Advantages:
 
 - Runs commands in ptys, making ets mostly transparent and avoiding pipe-related issues like buffering and lost coloring and interactivity.
+- Recognizes carriage return as line separator, does not choke on progress bars.
 - Has better operating defaults (uses monotonic clock where appropriate) and better formatting defaults (subjective).
 - Supports alternative time zones.
 - Is written in Go, not Perl, so you install a single executable, not script plus modules.

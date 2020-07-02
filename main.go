@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -21,8 +22,38 @@ var version = "unknown"
 
 func printStreamWithTimestamper(r io.Reader, timestamper *Timestamper) {
 	scanner := bufio.NewScanner(r)
+	// Split on \r\n|\r|\n, and return the line as well as the line ending (\r
+	// or \n is preserved, \r\n is collapsed to \n). Adaptation of
+	// bufio.ScanLines.
+	scanner.Split(func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		if atEOF && len(data) == 0 {
+			return 0, nil, nil
+		}
+		lfpos := bytes.IndexByte(data, '\n')
+		crpos := bytes.IndexByte(data, '\r')
+		if crpos >= 0 {
+			if lfpos < 0 || lfpos > crpos+1 {
+				// We have a CR-terminated "line".
+				return crpos + 1, data[0 : crpos+1], nil
+			}
+			if lfpos == crpos+1 {
+				// We have a CRLF-terminated line.
+				return lfpos + 1, append(data[0:crpos], '\n'), nil
+			}
+		}
+		if lfpos >= 0 {
+			// We have a LF-terminated line.
+			return lfpos + 1, data[0 : lfpos+1], nil
+		}
+		// If we're at EOF, we have a final, non-terminated line. Return it.
+		if atEOF {
+			return len(data), data, nil
+		}
+		// Request more data.
+		return 0, nil, nil
+	})
 	for scanner.Scan() {
-		fmt.Println(timestamper.CurrentTimestampString(), scanner.Text())
+		fmt.Print(timestamper.CurrentTimestampString(), " ", scanner.Text())
 	}
 }
 
@@ -79,7 +110,8 @@ func main() {
 		fmt.Fprintf(os.Stderr, `
 ets -- command output timestamper
 
-ets prefixes each line of a command's output with a timestamp.
+ets prefixes each line of a command's output with a timestamp. Lines are
+delimited by CR, LF, or CRLF.
 
 Usage:
 

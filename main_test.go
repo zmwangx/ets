@@ -195,6 +195,18 @@ func TestBasic(t *testing.T) {
 	}
 }
 
+func TestCR(t *testing.T) {
+	cmd := exec.Command("./ets", "-f", "[timestamp]", "echo '1\r2'")
+	expectedOutput := "[timestamp] 1\r[timestamp] 2\n"
+	output, err := cmd.Output()
+	if err != nil {
+		t.Fatalf("command failed: %s", err)
+	}
+	if string(output) != expectedOutput {
+		t.Fatalf("wrong output: expected %#v, got %#v", expectedOutput, string(output))
+	}
+}
+
 func TestStdin(t *testing.T) {
 	input := "out1\nout2\nout3\n"
 	expectedOutputs := []string{"out1", "out2", "out3"}
