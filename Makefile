@@ -11,6 +11,9 @@ test:
 shorttest:
 	go test -v -short
 
+snapshot:
+	goreleaser --snapshot --skip-publish --rm-dist
+
 update-readme:
 	tools/update-readme.sh
 	doctoc README.md
