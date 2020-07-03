@@ -1,8 +1,4 @@
-<h1 align="center">
-  <br>
-  <img src="assets/logo.svg" height="50" alt="ets" />
-  <br>
-</h1>
+<h1 align="center"><img src="assets/logo.svg" height="50" alt="ets" /></h1>
 
 <p align="center">
   <a href="https://github.com/zmwangx/ets/releases"><img src="https://img.shields.io/github/v/release/zmwangx/ets" alt="GitHub release" /></a>
