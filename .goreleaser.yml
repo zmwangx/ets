@@ -30,6 +30,13 @@ nfpms:
       - rpm
     replacements:
       386: i386
+    homepage: https://github.com/zmwangx/ets/
+    maintainer: Zhiming Wang <i@zhimingwang.org>
+    description: >
+      command output timestamper
+
+      ets prefixes each line of a command's output with a timestamp.
+    license: MIT
     files:
       "ets.1": "/usr/share/man/man1/ets.1"
 release:
