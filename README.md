@@ -363,7 +363,7 @@ HISTORY
 AUTHORS
      Zhiming Wang <i@zhimingwang.org>
 
-                                 June 16, 2020
+                                 July 3, 2020
 ```
 
 <!-- end manpage -->
