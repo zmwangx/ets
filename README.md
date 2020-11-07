@@ -142,6 +142,14 @@ $ ets -c ping localhost
 
 - On macOS and Linux you get download a prebuilt tarball/package from the [release page](https://github.com/zmwangx/ets/releases).
 
+- On Arch Linux you can install the [ets-bin](https://aur.archlinux.org/packages/ets-bin/) binary package from AUR:
+
+  ```sh
+  pacman -S ets-bin
+  # or
+  yay -S ets-bin
+  ```
+
 - On a supported platform, if you have the Go toolchain installed, you may install with
 
   ```
