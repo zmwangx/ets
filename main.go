@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"strconv"
 	"io"
 	"log"
 	"os"
@@ -26,7 +27,7 @@ var version = "unknown"
 // https://github.com/acarl005/stripansi/blob/5a71ef0e047df0427e87a79f27009029921f1f9b/stripansi.go#L7
 var ansiEscapes = regexp.MustCompile("[\u001B\u009B][[\\]()#;?]*(?:(?:(?:[a-zA-Z\\d]*(?:;[a-zA-Z\\d]*)*)?\u0007)|(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PRZcf-ntqry=><~]))")
 
-func printStreamWithTimestamper(r io.Reader, timestamper *Timestamper) {
+func printStreamWithTimestamper(r io.Reader, timestamper *Timestamper, delim string) {
 	scanner := bufio.NewScanner(r)
 	// Split on \r\n|\r|\n, and return the line as well as the line ending (\r
 	// or \n is preserved, \r\n is collapsed to \n). Adaptation of
@@ -59,11 +60,11 @@ func printStreamWithTimestamper(r io.Reader, timestamper *Timestamper) {
 		return 0, nil, nil
 	})
 	for scanner.Scan() {
-		fmt.Print(timestamper.CurrentTimestampString(), " ", scanner.Text())
+		fmt.Print(timestamper.CurrentTimestampString(), delim, scanner.Text())
 	}
 }
 
-func runCommandWithTimestamper(args []string, timestamper *Timestamper) error {
+func runCommandWithTimestamper(args []string, timestamper *Timestamper, delim string) error {
 	// Calculate optimal pty size, taking into account horizontal space taken up by timestamps.
 	getPtyWinsize := func() *pty.Winsize {
 		winsize, err := pty.GetsizeFull(os.Stdin)
@@ -118,7 +119,7 @@ func runCommandWithTimestamper(args []string, timestamper *Timestamper) error {
 
 	go func() { _, _ = io.Copy(ptmx, os.Stdin) }()
 
-	printStreamWithTimestamper(ptmx, timestamper)
+	printStreamWithTimestamper(ptmx, timestamper, delim)
 
 	return command.Wait()
 }
@@ -129,6 +130,7 @@ func main() {
 	var elapsedMode = flag.BoolP("elapsed", "s", false, "show elapsed timestamps")
 	var incrementalMode = flag.BoolP("incremental", "i", false, "show incremental timestamps")
 	var format = flag.StringP("format", "f", "", "show timestamps in this format")
+	var delim = flag.StringP("delim", "d", " ", "delimiter after timestamp (default is space)")
 	var utc = flag.BoolP("utc", "u", false, "show absolute timestamps in UTC")
 	var timezoneName = flag.StringP("timezone", "z", "", "show absolute timestamps in this timezone, e.g. America/New_York")
 	var color = flag.BoolP("color", "c", false, "show timestamps in color")
@@ -145,7 +147,7 @@ delimited by CR, LF, or CRLF.
 
 Usage:
 
-  %s [-s | -i] [-f format] [-u | -z timezone] command [arg ...]
+  %s [-s | -i] [-f format] [-d delim] [-u | -z timezone] command [arg ...]
   %s [options] shell_command
   %s [options]
 
@@ -214,6 +216,12 @@ Options:
 			*format = "[%T]"
 		}
 	}
+	s, err := strconv.Unquote(`"` + *delim + `"`)
+	if err != nil {
+		log.Fatalf("error parsing delimiter string: %s", err)
+	} else {
+		*delim = s
+	}
 	timezone := time.Local
 	if *utc && *timezoneName != "" {
 		log.Fatal("conflicting flags --utc and --timezone")
@@ -240,7 +248,7 @@ Options:
 
 	exitCode := 0
 	if len(args) == 0 {
-		printStreamWithTimestamper(os.Stdin, timestamper)
+		printStreamWithTimestamper(os.Stdin, timestamper, *delim)
 	} else {
 		if len(args) == 1 {
 			arg0 := args[0]
@@ -252,7 +260,7 @@ Options:
 				args = []string{shell, "-c", arg0}
 			}
 		}
-		if err = runCommandWithTimestamper(args, timestamper); err != nil {
+		if err = runCommandWithTimestamper(args, timestamper, *delim); err != nil {
 			if exitErr, ok := err.(*exec.ExitError); ok {
 				exitCode = exitErr.ExitCode()
 			} else {
