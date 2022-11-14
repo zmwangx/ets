@@ -10,36 +10,36 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: golangci-lint on .
-        uses: golangci/golangci-lint-action@v2.3.0
+        uses: golangci/golangci-lint-action@v3.3.1
         with:
           version: v1.28
           args: -E gofmt
       - name: golangci-lint on fixtures/basic
-        uses: golangci/golangci-lint-action@v2.3.0
+        uses: golangci/golangci-lint-action@v3.3.1
         with:
           version: v1.28
           working-directory: fixtures/basic
           args: -E gofmt
       - name: golangci-lint on fixtures/detect_tty
-        uses: golangci/golangci-lint-action@v2.3.0
+        uses: golangci/golangci-lint-action@v3.3.1
         with:
           version: v1.28
           working-directory: fixtures/detect_tty
           args: -E gofmt
       - name: golangci-lint on fixtures/signals
-        uses: golangci/golangci-lint-action@v2.3.0
+        uses: golangci/golangci-lint-action@v3.3.1
         with:
           version: v1.28
           working-directory: fixtures/signals
           args: -E gofmt
       - name: golangci-lint on fixtures/timed
-        uses: golangci/golangci-lint-action@v2.3.0
+        uses: golangci/golangci-lint-action@v3.3.1
         with:
           version: v1.28
           working-directory: fixtures/timed
           args: -E gofmt
       - name: golangci-lint on fixtures/winsize
-        uses: golangci/golangci-lint-action@v2.3.0
+        uses: golangci/golangci-lint-action@v3.3.1
         with:
           version: v1.28
           working-directory: fixtures/winsize
