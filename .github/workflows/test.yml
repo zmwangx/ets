@@ -8,51 +8,59 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: golangci-lint on .
-        uses: golangci/golangci-lint-action@v2.3.0
+      - uses: actions/checkout@v4
         with:
-          version: v1.28
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: false
+      - name: golangci-lint on .
+        uses: golangci/golangci-lint-action@v4
+        with:
+          version: v1.54
           args: -E gofmt
       - name: golangci-lint on fixtures/basic
-        uses: golangci/golangci-lint-action@v2.3.0
+        uses: golangci/golangci-lint-action@v4
         with:
-          version: v1.28
+          version: v1.54
           working-directory: fixtures/basic
           args: -E gofmt
       - name: golangci-lint on fixtures/detect_tty
-        uses: golangci/golangci-lint-action@v2.3.0
+        uses: golangci/golangci-lint-action@v4
         with:
-          version: v1.28
+          version: v1.54
           working-directory: fixtures/detect_tty
           args: -E gofmt
       - name: golangci-lint on fixtures/signals
-        uses: golangci/golangci-lint-action@v2.3.0
+        uses: golangci/golangci-lint-action@v4
         with:
-          version: v1.28
+          version: v1.54
           working-directory: fixtures/signals
           args: -E gofmt
       - name: golangci-lint on fixtures/timed
-        uses: golangci/golangci-lint-action@v2.3.0
+        uses: golangci/golangci-lint-action@v4
         with:
-          version: v1.28
+          version: v1.54
           working-directory: fixtures/timed
           args: -E gofmt
       - name: golangci-lint on fixtures/winsize
-        uses: golangci/golangci-lint-action@v2.3.0
+        uses: golangci/golangci-lint-action@v4
         with:
-          version: v1.28
+          version: v1.54
           working-directory: fixtures/winsize
           args: -E gofmt
 
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup Go
-        uses: actions/setup-go@v2
+      - uses: actions/checkout@v4
         with:
-          go-version: ^1.14
+          fetch-depth: 0
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+          cache: false
       - name: Test
         run: |
           make test
