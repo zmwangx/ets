@@ -1,3 +1,4 @@
+version: 2
 project_name: ets
 before:
   hooks:
@@ -22,14 +23,14 @@ builds:
       - goos: darwin
         goarch: 386
 archives:
-  - replacements:
-      386: i386
+  - files:
+      - COPYING
+      - ets.1
+      - README.md
 nfpms:
   - formats:
       - deb
       - rpm
-    replacements:
-      386: i386
     homepage: https://github.com/zmwangx/ets/
     maintainer: Zhiming Wang <i@zhimingwang.org>
     description: >
@@ -37,8 +38,9 @@ nfpms:
 
       ets prefixes each line of a command's output with a timestamp.
     license: MIT
-    files:
-      "ets.1": "/usr/share/man/man1/ets.1"
+    contents:
+      - src: ./ets.1
+        dst: /usr/share/man/man1/ets.1
 release:
   draft: true
   prerelease: auto
@@ -46,5 +48,5 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - "^docs:"
-      - "^test:"
+      - '^docs:'
+      - '^test:'
