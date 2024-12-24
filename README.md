@@ -367,7 +367,7 @@ HISTORY
 AUTHORS
      Zhiming Wang <i@zhimingwang.org>
 
-                                 July 3, 2020
+                               December 24, 2024
 ```
 
 <!-- end manpage -->
